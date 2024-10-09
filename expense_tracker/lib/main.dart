@@ -307,7 +307,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Total Budget: PKR ${_budget.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: screenWidth * 0.05)),
+              style: TextStyle(fontSize: screenWidth * 0.05)),
             SizedBox(height: 10),
             Text(
               'Total Expenses: PKR ${_currentTotalExpenses.toStringAsFixed(2)}',
@@ -343,9 +343,10 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                           controller: _increaseBudgetController,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                              labelText: "Increase Budget (PKR)",
-                              labelStyle:
-                                  TextStyle(fontSize: screenWidth * 0.04)),
+                            labelText: "Increase Budget (PKR)",
+                            labelStyle:
+                              TextStyle(fontSize: screenWidth * 0.04)
+                          ),
                         ),
                         SizedBox(height: 10),
                         ElevatedButton(
@@ -370,7 +371,8 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                         SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: _decreaseBudget,
-                          child: Text("Reduce from total")),
+                          child: Text("Reduce from total")
+                        ),
                       ],
                     ),
                   )
