@@ -234,6 +234,24 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       });
     }
   }
+  Map<String, List<Map<String, dynamic>>> _groupExpensesByMonth() {
+    Map<String, List<Map<String, dynamic>>> groupedExpenses = {};
+
+    for (var expense in _expenses) {
+      DateTime date = DateTime.parse(expense['date']);
+      String monthYear = DateFormat('MMMM yyyy').format(date); // e.g., "January 2024"
+
+      // Initialize the list for the month if it doesn't exist
+      if (!groupedExpenses.containsKey(monthYear)) {
+        groupedExpenses[monthYear] = [];
+      }
+
+      // Add the expense to the corresponding month
+      groupedExpenses[monthYear]!.add(expense);
+    }
+
+    return groupedExpenses;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -273,45 +291,77 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
               ),
             ),
             Expanded(  // Wrap the ListView with Expanded to avoid unbounded height
-              child: _expenses.isEmpty? 
-              const Padding(
+              child: _expenses.isEmpty
+              ? const Padding(
                 padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'No expenses added yet.',
-                    style: TextStyle(fontSize: 16),
-                  ),
-              ): 
-              ListView.builder(
-                itemCount: _expenses.length,
-                itemBuilder: (context, index) {
-                  final expense = _expenses[index];
-                  return Card(
-                    child: ListTile(
-                      title: Text(
-                        '${expense['description']} - PKR ${expense['amount']}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      subtitle: Text(
-                        DateFormat.yMMMd().format(DateTime.parse(expense['date'])),
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _editExpense(index),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _deleteExpense(index),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                child: Text(
+                  'No expenses added yet.',
+                  style: TextStyle(fontSize: 16),
+                ),
+              )
+              : FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
+                future: Future.value(_groupExpensesByMonth()),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } 
+                  else if (snapshot.hasError) {
+                    return Center(child: Text("Error: ${snapshot.error}"));
+                  }
+                  else{
+                    final groupedExpenses = snapshot.data!;
+                    return ListView(
+                      children: groupedExpenses.entries.map((entry) {
+                        String monthYear = entry.key;
+                        List<Map<String, dynamic>> expenses = entry.value;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Text(
+                                monthYear,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold
+                                ),
+                              ),
+                            ),
+                            ...expenses.map((expenses) {
+                              return Card (
+                                child: ListTile(
+                                  title: Text(
+                                    '${expenses['description']} - PKR ${expenses['amount']}',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  subtitle: Text(
+                                    DateFormat.yMMMd().format(DateTime.parse(expenses['date'])),
+                                    style: const TextStyle(fontSize: 15),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit),
+                                        onPressed: () => _editExpense(_expenses.indexOf(expenses)),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () => _deleteExpense(_expenses.indexOf(expenses)),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ],
+                        );
+                      }).toList()
+                    );
+                  }
                 },
-              ),
+              )
             ),
           ],
         ),
