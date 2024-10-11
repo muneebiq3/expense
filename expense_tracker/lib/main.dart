@@ -4,22 +4,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 void main() {
-  runApp(BudgetApp());
+  runApp(const BudgetApp());
 }
 
 class BudgetApp extends StatelessWidget {
+  const BudgetApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Monthly Expense Tracker',
-      theme: ThemeData(primarySwatch: Colors.blue),
       debugShowCheckedModeBanner: false,
-      home: BudgetHomePage(),
+      home: const BudgetHomePage(),
+      theme: ThemeData(
+        brightness: Brightness.dark,
+      ),
     );
   }
 }
 
 class BudgetHomePage extends StatefulWidget {
+  const BudgetHomePage({super.key});
+
   @override
   _BudgetHomePageState createState() => _BudgetHomePageState();
 }
@@ -31,11 +37,11 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   double _currentTotalExpenses = 0.0;
   double _currentRemainingBudget = 0.0;
   List<Map<String, dynamic>> _expenses = [];
-  TextEditingController _budgetController = TextEditingController();
-  TextEditingController _expenseController = TextEditingController();
-  TextEditingController _descriptionController = TextEditingController();
-  TextEditingController _increaseBudgetController = TextEditingController();
-  TextEditingController _decreaseBudgetController = TextEditingController();
+  final TextEditingController _budgetController = TextEditingController();
+  final TextEditingController _expenseController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _increaseBudgetController = TextEditingController();
+  final TextEditingController _decreaseBudgetController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -73,11 +79,9 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     setState(() {
       _budget = prefs.getDouble('budget') ?? 0.0;
       String? expensesJson = prefs.getString('expenses');
-      if (expensesJson != null) {
-        List<dynamic> jsonList = json.decode(expensesJson);
-        _expenses = jsonList.map((e) => e as Map<String, dynamic>).toList();
-      }
-      _currentTotalExpenses = prefs.getDouble('currentTotalExpenses') ?? 0.0;
+      List<dynamic> jsonList = json.decode(expensesJson!);
+      _expenses = jsonList.map((e) => e as Map<String, dynamic>).toList();
+          _currentTotalExpenses = prefs.getDouble('currentTotalExpenses') ?? 0.0;
       _currentRemainingBudget = prefs.getDouble('currentRemainingBudget') ?? _budget;
     });
   }
@@ -144,24 +148,24 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Edit Expense"),
+          title: const Text("Edit Expense"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: _expenseController,
-                decoration: InputDecoration(labelText: "Expense Amount"),
+                decoration: const InputDecoration(labelText: "Expense Amount"),
                 keyboardType: TextInputType.number,
               ),
               TextField(
                 controller: _descriptionController,
-                decoration: InputDecoration(labelText: "Description"),
+                decoration: const InputDecoration(labelText: "Description"),
               ),
               Row(
                 children: [
                   Text("Date: ${DateFormat.yMMMd().format(_selectedDate)}"),
                   IconButton(
-                    icon: Icon(Icons.calendar_today),
+                    icon: const Icon(Icons.calendar_today),
                     onPressed: () => _selectDate(context),
                   ),
                 ],
@@ -182,13 +186,13 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                 });
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text("Save"),
+              child: const Text("Save"),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text("Cancel"),
+              child: const Text("Cancel"),
             ),
           ],
         );
@@ -227,9 +231,9 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Monthly Expense Tracker'),
+        title: const Text('Monthly Expense Tracker'),
         leading: IconButton(
-          icon: Icon(Icons.menu),
+          icon: const Icon(Icons.menu),
           onPressed: () {
             _scaffoldKey.currentState?.openDrawer();
           },
@@ -237,7 +241,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: _refreshMonth,
             tooltip: "New Month")
         ],
@@ -245,25 +249,25 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       drawer: Drawer(
         child: Column(  // Use Column instead of ListView
           children: [
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Colors.white,
               ),
               child: Text(
                 'Expense History',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: screenWidth * 0.05,
+                  color: Colors.black,
+                  fontSize: 18,
                 ),
               ),
             ),
             Expanded(  // Wrap the ListView with Expanded to avoid unbounded height
               child: _expenses.isEmpty? 
-              Padding(
-                padding: const EdgeInsets.all(16.0),
+              const Padding(
+                padding: EdgeInsets.all(16.0),
                   child: Text(
                     'No expenses added yet.',
-                    style: TextStyle(fontSize: screenWidth * 0.04),
+                    style: TextStyle(fontSize: 16),
                   ),
               ): 
               ListView.builder(
@@ -274,21 +278,21 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                     child: ListTile(
                       title: Text(
                         '${expense['description']} - PKR ${expense['amount']}',
-                        style: TextStyle(fontSize: screenWidth * 0.04),
+                        style: const TextStyle(fontSize: 16),
                       ),
                       subtitle: Text(
                         DateFormat.yMMMd().format(DateTime.parse(expense['date'])),
-                        style: TextStyle(fontSize: screenWidth * 0.035),
+                        style: const TextStyle(fontSize: 15),
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.edit),
+                            icon: const Icon(Icons.edit),
                             onPressed: () => _editExpense(index),
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete),
+                            icon: const Icon(Icons.delete),
                             onPressed: () => _deleteExpense(index),
                           ),
                         ],
@@ -306,108 +310,124 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Total Budget: PKR ${_budget.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: screenWidth * 0.05)),
-            SizedBox(height: 10),
+            Text(
+              'Total Budget: PKR ${_budget.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 18)
+            ),
+            const SizedBox(height: 10),
             Text(
               'Total Expenses: PKR ${_currentTotalExpenses.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: screenWidth * 0.05),
+              style: const TextStyle(fontSize: 18),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               'Remaining: PKR ${_currentRemainingBudget.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: screenWidth * 0.05),
+              style: const TextStyle(fontSize: 18),
             ),
-            Divider(height: 20),
             TextField(
               controller: _budgetController,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Enter this month's budget (PKR)",
-                labelStyle: TextStyle(fontSize: screenWidth * 0.04),
+                labelStyle: TextStyle(fontSize: 16),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _addbudget,
-              child: Text("Define"),
-            ),
-            SizedBox(height: 20),
-            Flexible(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _increaseBudgetController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: "Increase Budget (PKR)",
-                            labelStyle:
-                              TextStyle(fontSize: screenWidth * 0.04)
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: _increaseBudget,
-                          child: Text("Add to total")
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _decreaseBudgetController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: "Decrease Budget (PKR)",
-                            labelStyle:
-                              TextStyle(fontSize: screenWidth * 0.04)),
-                        ),
-                        SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: _decreaseBudget,
-                          child: Text("Reduce from total")
-                        ),
-                      ],
-                    ),
-                  )
-                ],
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white
               ),
+              child: const Text("Define"),
             ),
-            Divider(height: 30),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _increaseBudgetController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Increase Budget (PKR)",
+                          labelStyle:
+                            TextStyle(fontSize: 16)
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: _increaseBudget,
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white
+                        ),
+                        child: const Text("Add to total"),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: screenWidth * 0.03),
+                Expanded(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _decreaseBudgetController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Decrease Budget (PKR)",
+                          labelStyle: TextStyle(fontSize: 16)
+                          ),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: _decreaseBudget,
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white
+                        ),
+                        child: const Text("Reduce from total")
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
             TextField(
               controller: _expenseController,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Enter expense amount (PKR)',
-                labelStyle: TextStyle(fontSize: screenWidth * 0.04),
+                labelStyle: TextStyle(fontSize: 16),
               ),
             ),
             TextField(
               controller: _descriptionController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Enter description',
-                labelStyle: TextStyle(fontSize: screenWidth * 0.04),
+                labelStyle: TextStyle(fontSize: 16),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               'Selected date: ${DateFormat.yMMMd().format(_selectedDate)}',
-              style: TextStyle(fontSize: screenWidth * 0.04),
+              style: const TextStyle(fontSize: 16),
             ),
             ElevatedButton(
               onPressed: () => _selectDate(context),
-              child: Text('Select Date'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white
+              ),
+              child: const Text('Select Date'),
             ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _addExpense,
-              child: Text('Add Expense'),
+            const SizedBox(height: 35),
+            SizedBox(
+              width: screenWidth * 1,
+              child: ElevatedButton(
+                onPressed: _addExpense,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white
+                ),
+                child: const Text('Add Expense'),
+              ),
             ),
           ],
         ),
