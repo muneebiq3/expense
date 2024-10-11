@@ -327,9 +327,13 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
             TextField(
               controller: _budgetController,
               keyboardType: TextInputType.number,
+              cursorColor: Colors.white,
               decoration: const InputDecoration(
                 labelText: "Enter this month's budget (PKR)",
-                labelStyle: TextStyle(fontSize: 16),
+                labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white)
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -349,10 +353,13 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                       TextField(
                         controller: _increaseBudgetController,
                         keyboardType: TextInputType.number,
+                        cursorColor: Colors.white,
                         decoration: const InputDecoration(
                           labelText: "Increase Budget (PKR)",
-                          labelStyle:
-                            TextStyle(fontSize: 16)
+                          labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white)
+                          ),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -373,10 +380,14 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                       TextField(
                         controller: _decreaseBudgetController,
                         keyboardType: TextInputType.number,
+                        cursorColor: Colors.white,
                         decoration: const InputDecoration(
                           labelText: "Decrease Budget (PKR)",
-                          labelStyle: TextStyle(fontSize: 16)
+                          labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white)
                           ),
+                        ),
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton(
@@ -394,16 +405,24 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
             TextField(
               controller: _expenseController,
               keyboardType: TextInputType.number,
+              cursorColor: Colors.white,
               decoration: const InputDecoration(
                 labelText: 'Enter expense amount (PKR)',
-                labelStyle: TextStyle(fontSize: 16),
+                labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white)
+                ),
               ),
             ),
             TextField(
               controller: _descriptionController,
+              cursorColor: Colors.white,
               decoration: const InputDecoration(
                 labelText: 'Enter description',
-                labelStyle: TextStyle(fontSize: 16),
+                labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white)
+                ),
               ),
             ),
             const SizedBox(height: 10),
