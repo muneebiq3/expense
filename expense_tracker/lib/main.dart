@@ -305,150 +305,152 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Total Budget: PKR ${_budget.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 18)
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Total Expenses: PKR ${_currentTotalExpenses.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Remaining: PKR ${_currentRemainingBudget.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 18),
-            ),
-            TextField(
-              controller: _budgetController,
-              keyboardType: TextInputType.number,
-              cursorColor: Colors.white,
-              decoration: const InputDecoration(
-                labelText: "Enter this month's budget (PKR)",
-                labelStyle: TextStyle(fontSize: 16, color: Colors.white),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white)
-                ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Total Budget: PKR ${_budget.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 18)
               ),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _addbudget,
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white
+              const SizedBox(height: 10),
+              Text(
+                'Total Expenses: PKR ${_currentTotalExpenses.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 18),
               ),
-              child: const Text("Define"),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _increaseBudgetController,
-                        keyboardType: TextInputType.number,
-                        cursorColor: Colors.white,
-                        decoration: const InputDecoration(
-                          labelText: "Increase Budget (PKR)",
-                          labelStyle: TextStyle(fontSize: 16, color: Colors.white),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white)
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: _increaseBudget,
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white
-                        ),
-                        child: const Text("Add to total"),
-                      ),
-                    ],
+              const SizedBox(height: 10),
+              Text(
+                'Remaining: PKR ${_currentRemainingBudget.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              TextField(
+                controller: _budgetController,
+                keyboardType: TextInputType.number,
+                cursorColor: Colors.white,
+                decoration: const InputDecoration(
+                  labelText: "Enter this month's budget (PKR)",
+                  labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white)
                   ),
                 ),
-                SizedBox(width: screenWidth * 0.03),
-                Expanded(
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _decreaseBudgetController,
-                        keyboardType: TextInputType.number,
-                        cursorColor: Colors.white,
-                        decoration: const InputDecoration(
-                          labelText: "Decrease Budget (PKR)",
-                          labelStyle: TextStyle(fontSize: 16, color: Colors.white),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white)
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: _decreaseBudget,
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white
-                        ),
-                        child: const Text("Reduce from total")
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-            TextField(
-              controller: _expenseController,
-              keyboardType: TextInputType.number,
-              cursorColor: Colors.white,
-              decoration: const InputDecoration(
-                labelText: 'Enter expense amount (PKR)',
-                labelStyle: TextStyle(fontSize: 16, color: Colors.white),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white)
-                ),
               ),
-            ),
-            TextField(
-              controller: _descriptionController,
-              cursorColor: Colors.white,
-              decoration: const InputDecoration(
-                labelText: 'Enter description',
-                labelStyle: TextStyle(fontSize: 16, color: Colors.white),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white)
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Selected date: ${DateFormat.yMMMd().format(_selectedDate)}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            ElevatedButton(
-              onPressed: () => _selectDate(context),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white
-              ),
-              child: const Text('Select Date'),
-            ),
-            const SizedBox(height: 35),
-            SizedBox(
-              width: screenWidth * 1,
-              child: ElevatedButton(
-                onPressed: _addExpense,
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _addbudget,
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white
                 ),
-                child: const Text('Add Expense'),
+                child: const Text("Define"),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _increaseBudgetController,
+                          keyboardType: TextInputType.number,
+                          cursorColor: Colors.white,
+                          decoration: const InputDecoration(
+                            labelText: "Increase Budget (PKR)",
+                            labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white)
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: _increaseBudget,
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white
+                          ),
+                          child: const Text("Add to total"),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: screenWidth * 0.03),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _decreaseBudgetController,
+                          keyboardType: TextInputType.number,
+                          cursorColor: Colors.white,
+                          decoration: const InputDecoration(
+                            labelText: "Decrease Budget (PKR)",
+                            labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white)
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: _decreaseBudget,
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white
+                          ),
+                          child: const Text("Reduce from total")
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              TextField(
+                controller: _expenseController,
+                keyboardType: TextInputType.number,
+                cursorColor: Colors.white,
+                decoration: const InputDecoration(
+                  labelText: 'Enter expense amount (PKR)',
+                  labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white)
+                  ),
+                ),
+              ),
+              TextField(
+                controller: _descriptionController,
+                cursorColor: Colors.white,
+                decoration: const InputDecoration(
+                  labelText: 'Enter description',
+                  labelStyle: TextStyle(fontSize: 16, color: Colors.white),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white)
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Selected date: ${DateFormat.yMMMd().format(_selectedDate)}',
+                style: const TextStyle(fontSize: 16),
+              ),
+              ElevatedButton(
+                onPressed: () => _selectDate(context),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white
+                ),
+                child: const Text('Select Date'),
+              ),
+              const SizedBox(height: 35),
+              SizedBox(
+                width: screenWidth * 1,
+                child: ElevatedButton(
+                  onPressed: _addExpense,
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white
+                  ),
+                  child: const Text('Add Expense'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
