@@ -1,6 +1,6 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 void main() {
@@ -311,53 +311,57 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                   else{
                     final groupedExpenses = snapshot.data!;
                     return ListView(
-                      children: groupedExpenses.entries.map((entry) {
-                        String monthYear = entry.key;
-                        List<Map<String, dynamic>> expenses = entry.value;
+                      children: groupedExpenses.entries.map(
+                        (entry) {
+                          String monthYear = entry.key;
+                          List<Map<String, dynamic>> expenses = entry.value;
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Text(
-                                monthYear,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: Text(
+                                  monthYear,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold
+                                  ),
                                 ),
                               ),
-                            ),
-                            ...expenses.map((expenses) {
-                              return Card (
-                                child: ListTile(
-                                  title: Text(
-                                    '${expenses['description']} - PKR ${expenses['amount']}',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  subtitle: Text(
-                                    DateFormat.yMMMd().format(DateTime.parse(expenses['date'])),
-                                    style: const TextStyle(fontSize: 15),
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit),
-                                        onPressed: () => _editExpense(_expenses.indexOf(expenses)),
+                              ...expenses.map(
+                                (expenses) {
+                                  return Card (
+                                    child: ListTile(
+                                      title: Text(
+                                        '${expenses['description']} - PKR ${expenses['amount']}',
+                                        style: const TextStyle(fontSize: 16),
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () => _deleteExpense(_expenses.indexOf(expenses)),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ],
-                        );
-                      }).toList()
+                                      subtitle: Text(
+                                        DateFormat.yMMMd().format(DateTime.parse(expenses['date'])),
+                                        style: const TextStyle(fontSize: 15),
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit),
+                                            onPressed: () => _editExpense(_expenses.indexOf(expenses)),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete),
+                                            onPressed: () => _deleteExpense(_expenses.indexOf(expenses)),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+                              ),
+                            ],
+                          );
+                        }
+                      ).toList()
                     );
                   }
                 },
