@@ -135,7 +135,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     });
   }
   void _editExpense(int index) {
-    // Retrieve the current expense details
+  // Retrieve the current expense details
     var expense = _expenses[index];
 
     // Set text controllers to current values
@@ -176,13 +176,24 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
             TextButton(
               onPressed: () {
                 setState(() {
+                  // Calculate the new expense amount
+                  double newExpenseAmount = double.tryParse(_expenseController.text) ?? 0.0;
+
+                  // Update the current total expenses based on the change
+                  _currentTotalExpenses += newExpenseAmount - expense['amount'];
+
                   // Update the expense details
                   _expenses[index] = {
-                    'amount': double.tryParse(_expenseController.text) ?? expense['amount'],
+                    'amount': newExpenseAmount,
                     'description': _descriptionController.text.isNotEmpty ? _descriptionController.text : expense['description'],
                     'date': _selectedDate.toIso8601String(),
                   };
-                  _saveBudgetData(); // Save updated data
+
+                  // Update the remaining budget
+                  _currentRemainingBudget = _budget - _currentTotalExpenses;
+
+                  // Save updated data
+                  _saveBudgetData();
                 });
                 Navigator.of(context).pop(); // Close the dialog
               },
@@ -338,12 +349,15 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                 ),
               ),
               const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _addbudget,
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white
+              SizedBox(
+                width: screenWidth * 1,
+                child: ElevatedButton(
+                  onPressed: _addbudget,
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white
+                  ),
+                  child: const Text("Define"),
                 ),
-                child: const Text("Define"),
               ),
               const SizedBox(height: 20),
               Row(
