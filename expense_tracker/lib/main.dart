@@ -31,8 +31,9 @@ class BudgetHomePage extends StatefulWidget {
 }
 
 class _BudgetHomePageState extends State<BudgetHomePage> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+   bool isButtonEnabled = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   double _budget = 0.0;
   double _currentTotalExpenses = 0.0;
   double _currentRemainingBudget = 0.0;
@@ -100,6 +101,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       _currentRemainingBudget = _budget; // Update remaining budget to match the defined budget
       _budgetController.clear();
       _saveBudgetData();
+      _disableButton();
     });
   }
 
@@ -218,6 +220,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       _currentTotalExpenses = 0.0;
       _currentRemainingBudget = 0.0;
       _saveBudgetData();
+      _enableButton();
     });
   }
 
@@ -251,6 +254,18 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     }
 
     return groupedExpenses;
+  }
+
+  void _enableButton() {
+    setState(() {
+      isButtonEnabled = true;
+    });
+  }
+
+  void _disableButton() {
+    setState(() {
+      isButtonEnabled = false;
+    });
   }
 
   @override
@@ -406,7 +421,11 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
               SizedBox(
                 width: screenWidth * 1,
                 child: ElevatedButton(
-                  onPressed: _addbudget,
+                  onPressed: isButtonEnabled 
+                  ? () {
+                    _addbudget();
+                  }
+                  : null,
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white
                   ),
