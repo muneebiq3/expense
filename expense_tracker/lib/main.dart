@@ -304,7 +304,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 21,
                   ),
                 ),
               ),
