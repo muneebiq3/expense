@@ -32,6 +32,7 @@ class BudgetHomePage extends StatefulWidget {
 
 class _BudgetHomePageState extends State<BudgetHomePage> {
 
+  bool _showExpenses = false;
   bool isButtonEnabled = false;
   double _budget = 0.0;
   double _currentTotalExpenses = 0.0;
@@ -413,6 +414,82 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     });
   }
 
+  Widget _buildExpensesWidget() {
+    return Container(  // Using Container to give it a defined height
+      height: 300,  // Adjust height as needed
+      child: _expenses.isEmpty
+          ? const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'No expenses added yet.',
+                style: TextStyle(fontSize: 16),
+              ),
+            )
+          : FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
+              future: Future.value(_groupExpensesByMonth()),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                } else {
+                  final groupedExpenses = snapshot.data!;
+                  return ListView(
+                    children: groupedExpenses.entries.map(
+                      (entry) {
+                        String monthYear = entry.key;
+                        List<Map<String, dynamic>> expenses = entry.value;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Text(
+                                monthYear,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            ...expenses.map(
+                              (expense) {
+                                return Card(
+                                  child: ListTile(
+                                    title: Text(
+                                      '${expense['description']} - PKR ${expense['amount']}',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    subtitle: Text(
+                                      DateFormat.yMMMd().format(DateTime.parse(expense['date'])),
+                                      style: const TextStyle(fontSize: 15),
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit),
+                                          onPressed: () => _editExpense(_expenses.indexOf(expense)),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete),
+                                          onPressed: () => _deleteExpense(_expenses.indexOf(expense)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ).toList(),
+                  );
+                }
+              },
+            ),
+    );
+  }
+
   Widget _buildSavingsList() {
     // If there are no previous months' savings, show a message
     if (_monthlySavings.isEmpty) {
@@ -472,7 +549,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
               padding: EdgeInsets.zero,
               child: Center(
                 child: Text(
-                  'Expense History',
+                  'Menu',
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -481,83 +558,93 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                 ),
               ),
             ),
-            Expanded(  // Wrap the ListView with Expanded to avoid unbounded height
-              child: _expenses.isEmpty
-              ? const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'No expenses added yet.',
-                  style: TextStyle(fontSize: 16),
-                ),
-              )
-              : FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
-                future: Future.value(_groupExpensesByMonth()),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } 
-                  else if (snapshot.hasError) {
-                    return Center(child: Text("Error: ${snapshot.error}"));
-                  }
-                  else{
-                    final groupedExpenses = snapshot.data!;
-                    return ListView(
-                      children: groupedExpenses.entries.map(
-                        (entry) {
-                          String monthYear = entry.key;
-                          List<Map<String, dynamic>> expenses = entry.value;
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: Text(
-                                  monthYear,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold
-                                  ),
-                                ),
-                              ),
-                              ...expenses.map(
-                                (expenses) {
-                                  return Card (
-                                    child: ListTile(
-                                      title: Text(
-                                        '${expenses['description']} - PKR ${expenses['amount']}',
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                      subtitle: Text(
-                                        DateFormat.yMMMd().format(DateTime.parse(expenses['date'])),
-                                        style: const TextStyle(fontSize: 15),
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.edit),
-                                            onPressed: () => _editExpense(_expenses.indexOf(expenses)),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete),
-                                            onPressed: () => _deleteExpense(_expenses.indexOf(expenses)),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }
-                              ),
-                            ],
-                          );
-                        }
-                      ).toList()
-                    );
-                  }
-                },
-              )
+            if(!_showExpenses)
+            ListTile(
+              title: const Text("Expenses History"),
+              onTap: () {
+                setState(() {
+                  _showExpenses = true;
+                });
+              },
             ),
+            if (_showExpenses) _buildExpensesWidget(), // Show expenses widget when _showExpenses is true
+            // Expanded(  // Wrap the ListView with Expanded to avoid unbounded height
+            //   child: _expenses.isEmpty
+            //   ? const Padding(
+            //     padding: EdgeInsets.all(16.0),
+            //     child: Text(
+            //       'No expenses added yet.',
+            //       style: TextStyle(fontSize: 16),
+            //     ),
+            //   )
+            //   : FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
+            //     future: Future.value(_groupExpensesByMonth()),
+            //     builder: (context, snapshot) {
+            //       if (snapshot.connectionState == ConnectionState.waiting) {
+            //         return const Center(child: CircularProgressIndicator());
+            //       } 
+            //       else if (snapshot.hasError) {
+            //         return Center(child: Text("Error: ${snapshot.error}"));
+            //       }
+            //       else{
+            //         final groupedExpenses = snapshot.data!;
+            //         return ListView(
+            //           children: groupedExpenses.entries.map(
+            //             (entry) {
+            //               String monthYear = entry.key;
+            //               List<Map<String, dynamic>> expenses = entry.value;
+
+            //               return Column(
+            //                 crossAxisAlignment: CrossAxisAlignment.start,
+            //                 children: [
+            //                   Padding(
+            //                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            //                     child: Text(
+            //                       monthYear,
+            //                       style: const TextStyle(
+            //                         fontSize: 18,
+            //                         fontWeight: FontWeight.bold
+            //                       ),
+            //                     ),
+            //                   ),
+            //                   ...expenses.map(
+            //                     (expenses) {
+            //                       return Card (
+            //                         child: ListTile(
+            //                           title: Text(
+            //                             '${expenses['description']} - PKR ${expenses['amount']}',
+            //                             style: const TextStyle(fontSize: 16),
+            //                           ),
+            //                           subtitle: Text(
+            //                             DateFormat.yMMMd().format(DateTime.parse(expenses['date'])),
+            //                             style: const TextStyle(fontSize: 15),
+            //                           ),
+            //                           trailing: Row(
+            //                             mainAxisSize: MainAxisSize.min,
+            //                             children: [
+            //                               IconButton(
+            //                                 icon: const Icon(Icons.edit),
+            //                                 onPressed: () => _editExpense(_expenses.indexOf(expenses)),
+            //                               ),
+            //                               IconButton(
+            //                                 icon: const Icon(Icons.delete),
+            //                                 onPressed: () => _deleteExpense(_expenses.indexOf(expenses)),
+            //                               )
+            //                             ],
+            //                           ),
+            //                         ),
+            //                       );
+            //                     }
+            //                   ),
+            //                 ],
+            //               );
+            //             }
+            //           ).toList()
+            //         );
+            //       }
+            //     },
+            //   )
+            // ),
           ],
         ),
       ),
