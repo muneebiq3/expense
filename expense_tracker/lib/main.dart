@@ -79,22 +79,97 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   void _loadBudgetData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _budget = prefs.getDouble('budget') ?? 0.0;
+      // Load monthly budgets
+      String? budgetsJson = prefs.getString('monthlyBudgets');
+      if (budgetsJson != null) {
+        Map<String, dynamic> savedBudgets = json.decode(budgetsJson);
+        _monthlyBudgets = savedBudgets.map((key, value) => MapEntry(key, value.toDouble()));
+      }
+
+      // Load monthly savings
+      String? savingsJson = prefs.getString('monthlySavings');
+      if (savingsJson != null) {
+        Map<String, dynamic> savedSavings = json.decode(savingsJson);
+        _monthlySavings = savedSavings.map((key, value) => MapEntry(key, value.toDouble()));
+      }
+
+      // Load expenses (same as before)
       String? expensesJson = prefs.getString('expenses');
       List<dynamic> jsonList = expensesJson != null ? json.decode(expensesJson) : [];
       _expenses = jsonList.map((e) => e as Map<String, dynamic>).toList();
-      
-      // Only calculate for the current month
-      _updateCurrentMonthExpenses();
+
+      // Update the UI with the selected month's data
+      _updateSelectedMonthData();
     });
   }
 
   void _saveBudgetData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setDouble('budget', _budget);
+    
+    // Save monthly budgets
+    prefs.setString('monthlyBudgets', json.encode(_monthlyBudgets));
+
+    // Save monthly savings
+    prefs.setString('monthlySavings', json.encode(_monthlySavings));
+
+    // Save expenses (same as before)
     prefs.setString('expenses', json.encode(_expenses));
-    prefs.setDouble('currentTotalExpenses', _currentTotalExpenses);
-    prefs.setDouble('currentRemainingBudget', _currentRemainingBudget);
+  }
+
+  // Update budget and expenses for the selected month
+  void _updateSelectedMonthData() {
+    String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
+
+    // Get budget for the selected month
+    _budget = _monthlyBudgets[selectedMonthKey] ?? 0.0;
+
+    // Get expenses for the selected month
+    List<Map<String, dynamic>> selectedMonthExpenses = _expenses
+        .where((expense) => DateFormat('MMMM yyyy').format(DateTime.parse(expense['date'])) == selectedMonthKey)
+        .toList();
+
+    _currentTotalExpenses = selectedMonthExpenses.fold(0.0, (sum, expense) => sum + expense['amount']);
+    _currentRemainingBudget = _budget - _currentTotalExpenses;
+
+    // Store savings for the selected month
+    _monthlySavings[selectedMonthKey] = _currentRemainingBudget;
+
+    // Calculate previous months' savings
+    _calculatePreviousMonthSavings();
+
+    // Save everything
+    _saveBudgetData();
+  }
+
+  void _calculatePreviousMonthSavings() {
+    String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
+
+    // Group expenses by month
+    Map<String, List<Map<String, dynamic>>> groupedExpenses = _groupExpensesByMonth();
+
+    // Calculate savings for each previous month
+    for (String monthYear in groupedExpenses.keys) {
+      if (monthYear != selectedMonthKey) {
+        List<Map<String, dynamic>> monthExpenses = groupedExpenses[monthYear]!;
+
+        double totalExpensesForMonth = monthExpenses.fold(0.0, (sum, expense) => sum + expense['amount']);
+        double budgetForMonth = _monthlyBudgets[monthYear] ?? 0.0;
+        double savingsForMonth = budgetForMonth - totalExpensesForMonth;
+
+        // Save the savings for the month
+        _monthlySavings[monthYear] = savingsForMonth;
+      }
+    }
+  }
+
+  void _setMonthlyBudget() {
+    setState(() {
+      _monthlyBudgets[DateFormat('MMMM yyyy').format(_selectedMonth)] =
+          double.tryParse(_budgetController.text) ?? 0.0;
+      _updateSelectedMonthData();
+      _saveBudgetData();
+      _budgetController.clear();
+    });
   }
 
   void _updateCurrentMonthExpenses() {
@@ -125,7 +200,10 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       String description = _descriptionController.text.trim();
 
       if (expenseAmount > 0) {
-        // Add expense
+        // Use the date of the expense (_selectedDate) to determine the month
+        String expenseMonthKey = DateFormat('MMMM yyyy').format(_selectedDate);
+
+        // Add the expense
         _expenses.add({
           'amount': expenseAmount,
           'date': _selectedDate.toIso8601String(),
@@ -135,16 +213,61 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
         // Sort by date
         _expenses.sort((a, b) => DateTime.parse(b['date']).compareTo(DateTime.parse(a['date'])));
 
-        // Recalculate only the current month's data
-        _updateCurrentMonthExpenses();
+        // Update the metrics for the correct month based on the expense date
+        _updateMonthMetrics(expenseMonthKey);
+
+        // Clear input fields
+        _expenseController.clear();
+        _descriptionController.clear();
+
+        // Save updated data
+        _saveBudgetData();
       }
-
-      // Clear input fields
-      _expenseController.clear();
-      _descriptionController.clear();
-
-      _saveBudgetData();
     });
+  }
+
+  void _updateMonthMetrics(String monthKey) {
+  // Get the budget for the specified month
+  double monthBudget = _monthlyBudgets[monthKey] ?? 0.0;
+
+  // Filter expenses for the specified month
+  List<Map<String, dynamic>> monthExpenses = _expenses
+      .where((expense) => DateFormat('MMMM yyyy').format(DateTime.parse(expense['date'])) == monthKey)
+      .toList();
+
+  // Calculate total expenses for the specified month
+  double totalExpensesForMonth = monthExpenses.fold(0.0, (sum, expense) => sum + expense['amount']);
+
+  // Calculate the remaining budget (savings) for the specified month
+  double remainingBudgetForMonth = monthBudget - totalExpensesForMonth;
+
+  // Store the updated savings for the specified month
+  _monthlySavings[monthKey] = remainingBudgetForMonth;
+
+  // If the month being updated is the currently selected month, update the UI
+  if (monthKey == DateFormat('MMMM yyyy').format(_selectedMonth)) {
+    _currentTotalExpenses = totalExpensesForMonth;
+    _currentRemainingBudget = remainingBudgetForMonth;
+    _budget = monthBudget;
+  }
+}
+
+  Future<void> _selectMonth(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedMonth,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2101),
+      // Only show month/year selection
+      helpText: "Select month",
+      initialDatePickerMode: DatePickerMode.year, // Show year first
+    );
+    if (picked != null && picked != _selectedMonth) {
+      setState(() {
+        _selectedMonth = DateTime(picked.year, picked.month);
+        _updateSelectedMonthData(); // Refresh data for the selected month
+      });
+    }
   }
 
   void _deleteExpense(int index) {
@@ -274,6 +397,9 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
 
     return groupedExpenses;
   }
+  Map<String, double> _monthlyBudgets = {};
+  Map<String, double> _monthlySavings = {};  // Track savings for each month
+  DateTime _selectedMonth = DateTime.now();
 
   void _enableButton() {
     setState(() {
@@ -285,6 +411,33 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     setState(() {
       isButtonEnabled = false;
     });
+  }
+
+  Widget _buildSavingsList() {
+    // If there are no previous months' savings, show a message
+    if (_monthlySavings.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 10.0),
+        child: Text(
+          'No savings for previous months.',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
+
+    // Otherwise, display the savings for each previous month
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _monthlySavings.entries.map((entry) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5.0),
+          child: Text(
+            'Savings for ${entry.key}: PKR ${entry.value.toStringAsFixed(2)}',
+            style: const TextStyle(fontSize: 16, color: Colors.green),
+          ),
+        );
+      }).toList(),
+    );
   }
 
   @override
@@ -414,6 +567,21 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildSavingsList(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Selected Month: ${DateFormat('MMMM yyyy').format(_selectedMonth)}',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () => _selectMonth(context)
+                  )
+                ],
+              ),
+              const SizedBox(height: 10),
               Text(
                 'Total Budget: PKR ${_budget.toStringAsFixed(2)}',
                 style: const TextStyle(fontSize: 18)
@@ -433,26 +601,25 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                 keyboardType: TextInputType.number,
                 cursorColor: Colors.white,
                 decoration: const InputDecoration(
-                  labelText: "Enter this month's budget (PKR)",
+                  labelText: "Enter monthly budget (PKR)",
                   labelStyle: TextStyle(fontSize: 16, color: Colors.white),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white)
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
               SizedBox(
                 width: screenWidth * 1,
                 child: ElevatedButton(
-                  onPressed: isButtonEnabled 
+                  onPressed: isButtonEnabled
                   ? () {
-                    _addbudget();
+                    _setMonthlyBudget();
                   }
                   : null,
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white
                   ),
-                  child: const Text("Define"),
+                  child: const Text("Set Monthly Budget")
                 ),
               ),
               const SizedBox(height: 20),
