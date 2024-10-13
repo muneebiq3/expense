@@ -540,10 +540,11 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _refreshMonth,
-            tooltip: "New Month")
+            tooltip: "New Month"
+          )
         ],
       ),
-      drawer: Drawer(
+      drawer: Drawer( 
         child: Column(  // Use Column instead of ListView
           children: [
             DrawerHeader(
@@ -551,16 +552,27 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                 color: Colors.white,
               ),
               padding: EdgeInsets.zero,
-              child: Center(
-                child: Text(
-                  _drawerHeader,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 21,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: IconButton(
+                      color: Colors.black,
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () {},
+                    ),
                   ),
-                ),
-              ),
+                  Expanded(
+                    child: Text(
+                      _drawerHeader,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 21,
+                      ),
+                    ),
+                  )
+                ],
+              )
             ),
             if(!_showExpenses)
             ListTile(
