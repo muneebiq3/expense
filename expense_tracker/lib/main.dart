@@ -32,19 +32,20 @@ class BudgetHomePage extends StatefulWidget {
 
 class _BudgetHomePageState extends State<BudgetHomePage> {
 
-   bool isButtonEnabled = false;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isButtonEnabled = false;
   double _budget = 0.0;
   double _currentTotalExpenses = 0.0;
   double _currentRemainingBudget = 0.0;
+  DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _expenses = [];
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _budgetController = TextEditingController();
   final TextEditingController _expenseController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _increaseBudgetController = TextEditingController();
   final TextEditingController _decreaseBudgetController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
-
+  
   @override
   void initState() {
     super.initState();
@@ -80,10 +81,11 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     setState(() {
       _budget = prefs.getDouble('budget') ?? 0.0;
       String? expensesJson = prefs.getString('expenses');
-      List<dynamic> jsonList = json.decode(expensesJson!);
+      List<dynamic> jsonList = expensesJson != null ? json.decode(expensesJson) : [];
       _expenses = jsonList.map((e) => e as Map<String, dynamic>).toList();
-          _currentTotalExpenses = prefs.getDouble('currentTotalExpenses') ?? 0.0;
-      _currentRemainingBudget = prefs.getDouble('currentRemainingBudget') ?? _budget;
+      
+      // Only calculate for the current month
+      _updateCurrentMonthExpenses();
     });
   }
 
@@ -93,6 +95,18 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     prefs.setString('expenses', json.encode(_expenses));
     prefs.setDouble('currentTotalExpenses', _currentTotalExpenses);
     prefs.setDouble('currentRemainingBudget', _currentRemainingBudget);
+  }
+
+  void _updateCurrentMonthExpenses() {
+    String currentMonthKey = DateFormat('MMMM yyyy').format(_currentMonth);
+
+    List<Map<String, dynamic>> currentMonthExpenses = _expenses
+        .where((expense) => DateFormat('MMMM yyyy').format(DateTime.parse(expense['date'])) == currentMonthKey)
+        .toList();
+
+    // Calculate total expenses for the current month
+    _currentTotalExpenses = currentMonthExpenses.fold(0.0, (sum, expense) => sum + expense['amount']);
+    _currentRemainingBudget = _budget - _currentTotalExpenses;
   }
 
   void _addbudget() {
@@ -111,19 +125,24 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       String description = _descriptionController.text.trim();
 
       if (expenseAmount > 0) {
+        // Add expense
         _expenses.add({
           'amount': expenseAmount,
           'date': _selectedDate.toIso8601String(),
           'description': description,
         });
 
+        // Sort by date
         _expenses.sort((a, b) => DateTime.parse(b['date']).compareTo(DateTime.parse(a['date'])));
 
-        _currentTotalExpenses += expenseAmount;
-        _currentRemainingBudget = _budget - _currentTotalExpenses;
+        // Recalculate only the current month's data
+        _updateCurrentMonthExpenses();
       }
+
+      // Clear input fields
       _expenseController.clear();
       _descriptionController.clear();
+
       _saveBudgetData();
     });
   }
