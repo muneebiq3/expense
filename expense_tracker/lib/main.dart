@@ -297,11 +297,15 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
               decoration: BoxDecoration(
                 color: Colors.white,
               ),
-              child: Text(
-                'Expense History',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
+              padding: EdgeInsets.zero,
+              child: Center(
+                child: Text(
+                  'Expense History',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ),
