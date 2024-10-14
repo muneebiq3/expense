@@ -27,6 +27,7 @@ class BudgetHomePage extends StatefulWidget {
   const BudgetHomePage({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _BudgetHomePageState createState() => _BudgetHomePageState();
 }
 
@@ -176,29 +177,28 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                setState(() {
-                  // Calculate the new expense amount
-                  double newExpenseAmount = double.tryParse(_expenseController.text) ?? 0.0;
+              onPressed: () => setState(() {
+                // Calculate the new expense amount
+                double newExpenseAmount = double.tryParse(_expenseController.text) ?? 0.0;
 
-                  // Update the current total expenses based on the change
-                  _currentTotalExpenses += newExpenseAmount - expense['amount'];
+                // Update the current total expenses based on the change
+                _currentTotalExpenses += newExpenseAmount - expense['amount'];
 
-                  // Update the expense details
-                  _expenses[index] = {
-                    'amount': newExpenseAmount,
-                    'description': _descriptionController.text.isNotEmpty ? _descriptionController.text : expense['description'],
-                    'date': _selectedDate.toIso8601String(),
-                  };
+                // Update the expense details
+                _expenses[index] = {
+                  'amount': newExpenseAmount,
+                  'description': _descriptionController.text.isNotEmpty ? _descriptionController.text : expense['description'],
+                  'date': _selectedDate.toIso8601String(),
+                };
 
-                  // Update the remaining budget
-                  _currentRemainingBudget = _budget - _currentTotalExpenses;
+                // Update the remaining budget
+                _currentRemainingBudget = _budget - _currentTotalExpenses;
 
-                  // Save updated data
-                  _saveBudgetData();
-                });
-                Navigator.of(context).pop(); // Close the dialog
-              },
+                // Save updated data
+                _saveBudgetData();
+                Navigator.of(context).pop();
+              }),
+              
               child: const Text("Save"),
             ),
             TextButton(
