@@ -34,7 +34,9 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
 
   String _drawerHeader = "Menu";
   bool _showExpenses = false;
-  bool isButtonEnabled = false;
+  bool _showSavings = false;
+  bool _isButtonEnabled = false;
+  bool _back_arrow = false;
   double _budget = 0.0;
   double _currentTotalExpenses = 0.0;
   double _currentRemainingBudget = 0.0;
@@ -405,13 +407,13 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
 
   void _enableButton() {
     setState(() {
-      isButtonEnabled = true;
+      _isButtonEnabled = true;
     });
   }
 
   void _disableButton() {
     setState(() {
-      isButtonEnabled = false;
+      _isButtonEnabled = false;
     });
   }
 
@@ -511,10 +513,10 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: _monthlySavings.entries.map((entry) {
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5.0),
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
           child: Text(
-            'Savings for ${entry.key}: PKR ${entry.value.toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 16, color: Colors.green),
+            '${entry.key}: PKR ${entry.value.toStringAsFixed(2)}',
+            style: const TextStyle(fontSize: 16, color: Colors.white),
           ),
         );
       }).toList(),
@@ -557,14 +559,16 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                   Row(
                     children: [
                       Visibility(
-                        visible: _showExpenses,
+                        visible: _back_arrow,
                         child: IconButton(
                           color: Colors.black,
                           icon: const Icon(Icons.arrow_back),
                           onPressed: () {
                             setState(() {
                               _drawerHeader = "Menu";
+                              _back_arrow = false;
                               _showExpenses = false;
+                              _showSavings = false;
                             });
                           },
                           tooltip: "Back to Menu",
@@ -591,19 +595,39 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                 ],
               ),
             ),
-            if(!_showExpenses)
-            ListTile(
-              title: const Text("Expenses"),
-              onTap: () {
-                setState(() {
-                  
-                  _drawerHeader = "Expenses History";
-                  _showExpenses = true;
-                  
-                });
-              },
-            ),
+
+            if(!_showExpenses && !_showSavings) ...[
+              ListTile(
+                title: const Text("Expenses"),
+                onTap: () {
+                  setState(() {
+                    
+                    _drawerHeader = "Expenses History";
+                    _back_arrow = true;
+                    _showExpenses = true;
+                    _showSavings = false;
+                    
+                  });
+                },
+              ),
+
+              ListTile(
+                title: const Text("Savings"),
+                onTap: () {
+                  setState(() {
+                    
+                    _drawerHeader = "Savings History";
+                    _back_arrow = true;
+                    _showExpenses = false;
+                    _showSavings = true;
+                    
+                  });
+                },
+              ),
+            ],
+            
             if (_showExpenses) _buildExpensesWidget(), // Show expenses widget when _showExpenses is true
+            if (_showSavings) _buildSavingsList()
           ],
         ),
       ),
@@ -613,7 +637,6 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSavingsList(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -657,7 +680,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
               SizedBox(
                 width: screenWidth * 1,
                 child: ElevatedButton(
-                  onPressed: isButtonEnabled
+                  onPressed: _isButtonEnabled
                   ? () {
                     _setMonthlyBudget();
                   }
