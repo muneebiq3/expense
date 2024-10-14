@@ -534,7 +534,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
           onPressed: () {
             _scaffoldKey.currentState?.openDrawer();
           },
-          tooltip: "Expense History",
+          tooltip: "Menu",
         ),
         actions: [
           IconButton(
@@ -552,27 +552,44 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                 color: Colors.white,
               ),
               padding: EdgeInsets.zero,
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: IconButton(
-                      color: Colors.black,
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () {},
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      _drawerHeader,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 21,
+                  Row(
+                    children: [
+                      Visibility(
+                        visible: _showExpenses,
+                        child: IconButton(
+                          color: Colors.black,
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () {
+                            setState(() {
+                              _drawerHeader = "Menu";
+                              _showExpenses = false;
+                            });
+                          },
+                          tooltip: "Back to Menu",
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            _drawerHeader,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 21,
+                            ),
+                          ),
+                        ),
+                      )
+                    ]
                   )
                 ],
-              )
+              ),
             ),
             if(!_showExpenses)
             ListTile(
