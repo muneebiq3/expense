@@ -13,7 +13,7 @@ class BudgetApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Monthly Expense Tracker',
+      title: 'Budget Tracker',
       debugShowCheckedModeBanner: false,
       home: const BudgetHomePage(),
       theme: ThemeData(
@@ -530,7 +530,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('Monthly Expense Tracker'),
+        title: const Text('Budget Tracker'),
         leading: IconButton(
           icon: const Icon(Icons.menu),
           onPressed: () {
