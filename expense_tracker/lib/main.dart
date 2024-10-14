@@ -176,28 +176,6 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     });
   }
 
-  void _updateCurrentMonthExpenses() {
-    String currentMonthKey = DateFormat('MMMM yyyy').format(_currentMonth);
-
-    List<Map<String, dynamic>> currentMonthExpenses = _expenses
-        .where((expense) => DateFormat('MMMM yyyy').format(DateTime.parse(expense['date'])) == currentMonthKey)
-        .toList();
-
-    // Calculate total expenses for the current month
-    _currentTotalExpenses = currentMonthExpenses.fold(0.0, (sum, expense) => sum + expense['amount']);
-    _currentRemainingBudget = _budget - _currentTotalExpenses;
-  }
-
-  void _addbudget() {
-    setState(() {
-      _budget = double.tryParse(_budgetController.text) ?? 0.0;
-      _currentRemainingBudget = _budget; // Update remaining budget to match the defined budget
-      _budgetController.clear();
-      _saveBudgetData();
-      _disableButton();
-    });
-  }
-
   void _addExpense() {
     setState(() {
       double expenseAmount = double.tryParse(_expenseController.text) ?? 0.0;
@@ -411,40 +389,34 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     });
   }
 
-  void _disableButton() {
-    setState(() {
-      _isButtonEnabled = false;
-    });
-  }
-
   Widget _buildExpensesWidget() {
-    return SizedBox(  // Using Container to give it a defined height
-      height: 200,  // Adjust height as needed
-      child: _expenses.isEmpty
-      ? const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text(
-          'No expenses added yet.',
-          style: TextStyle(fontSize: 16),
-        ),
-        
-      )
-      : FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
-        future: Future.value(_groupExpensesByMonth()),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } 
-          else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } 
-          else {
-            final groupedExpenses = snapshot.data!;
-            return ListView(
+    return _expenses.isEmpty
+    ? const Padding(
+      padding: EdgeInsets.all(16.0),
+      child: Text(
+        'No expenses added yet.',
+        style: TextStyle(fontSize: 16),
+      ),
+    )
+    : FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
+      future: Future.value(_groupExpensesByMonth()),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } 
+        else if (snapshot.hasError) {
+          return Center(child: Text("Error: ${snapshot.error}"));
+        } 
+        else {
+          final groupedExpenses = snapshot.data!;
+              
+          // Use Flexible or Expanded to avoid overflow issues
+          return Flexible(
+            child: ListView(
               children: groupedExpenses.entries.map(
                 (entry) {
-                String monthYear = entry.key;
-                List<Map<String, dynamic>> expenses = entry.value;
+                  String monthYear = entry.key;
+                  List<Map<String, dynamic>> expenses = entry.value;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -453,7 +425,8 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: Text(
                           monthYear,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
                       ...expenses.map(
@@ -465,19 +438,24 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                                 style: const TextStyle(fontSize: 16),
                               ),
                               subtitle: Text(
-                                DateFormat.yMMMd().format(DateTime.parse(expense['date'])),
+                                DateFormat.yMMMd().format(
+                                DateTime.parse(expense['date'])),
                                 style: const TextStyle(fontSize: 15),
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [ 
+                                children: [
                                   IconButton(
                                     icon: const Icon(Icons.edit),
-                                    onPressed: () => _editExpense(_expenses.indexOf(expense)),
+                                    onPressed: () => _editExpense(
+                                      _expenses.indexOf(expense)
+                                    ),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete),
-                                    onPressed: () => _deleteExpense(_expenses.indexOf(expense)),
+                                    onPressed: () => _deleteExpense(
+                                      _expenses.indexOf(expense)
+                                    ),
                                   ),
                                 ],
                               ),
@@ -489,12 +467,11 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                   );
                 },
               ).toList(),
-            );
-          }
-        },
-      ),
+            ),
+          );
+        }
+      },
     );
-    
   }
 
   Widget _buildSavingsList() {
