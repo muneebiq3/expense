@@ -62,20 +62,27 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       if (increaseAmount > 0) {
         _currentRemainingBudget += increaseAmount;
         _budget += increaseAmount;
+        String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
+        // Update the budget in the _monthlyBudgets map
+        _monthlyBudgets[selectedMonthKey] = _budget;
         _increaseBudgetController.clear();
         _saveBudgetData();
+        _updateMonthMetrics(selectedMonthKey);
       }
     });
   }
 
   void _decreaseBudget() {
+    double decreaseAmount = double.tryParse(_decreaseBudgetController.text) ?? 0.0;
     setState(() {
-      double decreaseAmount = double.tryParse(_decreaseBudgetController.text) ?? 0.0;
       if (decreaseAmount > 0) {
         _currentRemainingBudget -= decreaseAmount;
         _budget -= decreaseAmount;
+        String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
+        _monthlyBudgets[selectedMonthKey] = _budget;
         _decreaseBudgetController.clear();
         _saveBudgetData();
+        _updateMonthMetrics(selectedMonthKey);
       }
     });
   }
@@ -209,30 +216,30 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   }
 
   void _updateMonthMetrics(String monthKey) {
-  // Get the budget for the specified month
-  double monthBudget = _monthlyBudgets[monthKey] ?? 0.0;
+    // Get the budget for the specified month
+    double monthBudget = _monthlyBudgets[monthKey] ?? 0.0;
 
-  // Filter expenses for the specified month
-  List<Map<String, dynamic>> monthExpenses = _expenses
-      .where((expense) => DateFormat('MMMM yyyy').format(DateTime.parse(expense['date'])) == monthKey)
-      .toList();
+    // Filter expenses for the specified month
+    List<Map<String, dynamic>> monthExpenses = _expenses
+        .where((expense) => DateFormat('MMMM yyyy').format(DateTime.parse(expense['date'])) == monthKey)
+        .toList();
 
-  // Calculate total expenses for the specified month
-  double totalExpensesForMonth = monthExpenses.fold(0.0, (sum, expense) => sum + expense['amount']);
+    // Calculate total expenses for the specified month
+    double totalExpensesForMonth = monthExpenses.fold(0.0, (sum, expense) => sum + expense['amount']);
 
-  // Calculate the remaining budget (savings) for the specified month
-  double remainingBudgetForMonth = monthBudget - totalExpensesForMonth;
+    // Calculate the remaining budget (savings) for the specified month
+    double remainingBudgetForMonth = monthBudget - totalExpensesForMonth;
 
-  // Store the updated savings for the specified month
-  _monthlySavings[monthKey] = remainingBudgetForMonth;
+    // Store the updated savings for the specified month
+    _monthlySavings[monthKey] = remainingBudgetForMonth;
 
-  // If the month being updated is the currently selected month, update the UI
-  if (monthKey == DateFormat('MMMM yyyy').format(_selectedMonth)) {
-    _currentTotalExpenses = totalExpensesForMonth;
-    _currentRemainingBudget = remainingBudgetForMonth;
-    _budget = monthBudget;
+    // If the month being updated is the currently selected month, update the UI
+    if (monthKey == DateFormat('MMMM yyyy').format(_selectedMonth)) {
+      _currentTotalExpenses = totalExpensesForMonth;
+      _currentRemainingBudget = remainingBudgetForMonth;
+      _budget = monthBudget;
+    }
   }
-}
 
   Future<void> _selectMonth(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
