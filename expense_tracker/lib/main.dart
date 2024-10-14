@@ -27,6 +27,7 @@ class BudgetHomePage extends StatefulWidget {
   const BudgetHomePage({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _BudgetHomePageState createState() => _BudgetHomePageState();
 }
 
@@ -36,11 +37,10 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   bool _showExpenses = false;
   bool _showSavings = false;
   bool _isButtonEnabled = false;
-  bool _back_arrow = false;
+  bool _backArrow = false;
   double _budget = 0.0;
   double _currentTotalExpenses = 0.0;
   double _currentRemainingBudget = 0.0;
-  DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
   DateTime _selectedDate = DateTime.now();
   List<Map<String, dynamic>> _expenses = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -527,13 +527,13 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                   Row(
                     children: [
                       Visibility(
-                        visible: _back_arrow,
+                        visible: _backArrow,
                         child: IconButton(
                           color: Colors.black,
                           icon: const Icon(Icons.arrow_back),
                           onPressed: () => setState(() {
                             _drawerHeader = "Menu";
-                            _back_arrow = false;
+                            _backArrow = false;
                             _showExpenses = false;
                             _showSavings = false;
                           }),
@@ -565,30 +565,26 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
             if(!_showExpenses && !_showSavings) ...[
               ListTile(
                 title: const Text("Expenses"),
-                onTap: () {
-                  setState(() {
+                onTap: () => setState(() {
                     
-                    _drawerHeader = "Expenses History";
-                    _back_arrow = true;
-                    _showExpenses = true;
-                    _showSavings = false;
+                  _drawerHeader = "Expenses History";
+                  _backArrow = true;
+                  _showExpenses = true;
+                  _showSavings = false;
                     
-                  });
-                },
+                }),
               ),
 
               ListTile(
                 title: const Text("Savings"),
-                onTap: () {
-                  setState(() {
+                onTap: () => setState(() {
                     
-                    _drawerHeader = "Savings History";
-                    _back_arrow = true;
-                    _showExpenses = false;
-                    _showSavings = true;
+                  _drawerHeader = "Savings History";
+                  _backArrow = true;
+                  _showExpenses = false;
+                  _showSavings = true;
                     
-                  });
-                },
+                }),
               ),
             ],
             
