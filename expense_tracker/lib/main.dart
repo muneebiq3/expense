@@ -300,7 +300,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
               padding: EdgeInsets.zero,
               child: Center(
                 child: Text(
-                  'Expense History',
+                  'Expenses History',
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -433,7 +433,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white
                   ),
-                  child: const Text("Define"),
+                  child: const Text("Set Monthly Budget"),
                 ),
               ),
               const SizedBox(height: 20),
