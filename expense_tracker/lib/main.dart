@@ -300,8 +300,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                setState(() {
+              onPressed: () => setState(() {
                   // Calculate the new expense amount
                   double newExpenseAmount = double.tryParse(_expenseController.text) ?? 0.0;
 
@@ -320,15 +319,13 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
 
                   // Save updated data
                   _saveBudgetData();
-                });
+                
                 Navigator.of(context).pop(); // Close the dialog
-              },
+              }),
               child: const Text("Save"),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
+              onPressed: () => Navigator.of(context).pop(), // Close the dialog
               child: const Text("Cancel"),
             ),
           ],
@@ -447,15 +444,11 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.edit),
-                                    onPressed: () => _editExpense(
-                                      _expenses.indexOf(expense)
-                                    ),
+                                    onPressed: () => _editExpense(_expenses.indexOf(expense)),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete),
-                                    onPressed: () => _deleteExpense(
-                                      _expenses.indexOf(expense)
-                                    ),
+                                    onPressed: () => _deleteExpense(_expenses.indexOf(expense)),
                                   ),
                                 ],
                               ),
@@ -510,9 +503,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
         title: const Text('Budget Tracker'),
         leading: IconButton(
           icon: const Icon(Icons.menu),
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           tooltip: "Menu",
         ),
         actions: [
@@ -540,14 +531,12 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                         child: IconButton(
                           color: Colors.black,
                           icon: const Icon(Icons.arrow_back),
-                          onPressed: () {
-                            setState(() {
-                              _drawerHeader = "Menu";
-                              _back_arrow = false;
-                              _showExpenses = false;
-                              _showSavings = false;
-                            });
-                          },
+                          onPressed: () => setState(() {
+                            _drawerHeader = "Menu";
+                            _back_arrow = false;
+                            _showExpenses = false;
+                            _showSavings = false;
+                          }),
                           tooltip: "Back to Menu",
                         ),
                       ),
