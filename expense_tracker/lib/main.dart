@@ -57,19 +57,27 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   }
 
   void _increaseBudget() {
-    setState(() {
-      double increaseAmount = double.tryParse(_increaseBudgetController.text) ?? 0.0;
-      if (increaseAmount > 0) {
+
+    double increaseAmount = double.tryParse(_increaseBudgetController.text) ?? 0.0;
+    String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
+    if(increaseAmount > 0) {
+      setState(() {
+        
         _currentRemainingBudget += increaseAmount;
         _budget += increaseAmount;
-        String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
+
         // Update the budget in the _monthlyBudgets map
-        _monthlyBudgets[selectedMonthKey] = _budget;
+         _monthlyBudgets[selectedMonthKey] = _budget;
+
         _increaseBudgetController.clear();
-        _saveBudgetData();
-        _updateMonthMetrics(selectedMonthKey);
-      }
-    });
+
+
+      });
+
+      _saveBudgetData();
+      _updateMonthMetrics(selectedMonthKey);
+
+    }
   }
 
   void _decreaseBudget() {
@@ -116,15 +124,11 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
 
   void _saveBudgetData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    
-    // Save monthly budgets
-    prefs.setString('monthlyBudgets', json.encode(_monthlyBudgets));
 
-    // Save monthly savings
-    prefs.setString('monthlySavings', json.encode(_monthlySavings));
-
-    // Save expenses (same as before)
-    prefs.setString('expenses', json.encode(_expenses));
+    // Batch saving data to avoid multiple disk writes
+    await prefs.setString('monthlyBudgets', json.encode(_monthlyBudgets));
+    await prefs.setString('monthlySavings', json.encode(_monthlySavings));
+    await prefs.setString('expenses', json.encode(_expenses));
   }
 
   // Update budget and expenses for the selected month
