@@ -296,8 +296,11 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     });
   }
   void _editExpense(int index) {
-  // Retrieve the current expense details
+    // Retrieve the current expense details
     var expense = _expenses[index];
+
+    // Store the original month before changes
+    String oldMonthKey = DateFormat('MMMM yyyy').format(DateTime.parse(expense['date']));
 
     // Set text controllers to current values
     _expenseController.text = expense['amount'].toString();
@@ -336,25 +339,39 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
           actions: [
             TextButton(
               onPressed: () => setState(() {
-                  // Calculate the new expense amount
-                  double newExpenseAmount = double.tryParse(_expenseController.text) ?? 0.0;
+                // Calculate the new expense amount
+                double newExpenseAmount = double.tryParse(_expenseController.text) ?? 0.0;
 
-                  // Update the current total expenses based on the change
-                  _currentTotalExpenses += newExpenseAmount - expense['amount'];
+                // Store the new month key (in case the date changes)
+                String newMonthKey = DateFormat('MMMM yyyy').format(_selectedDate);
 
-                  // Update the expense details
-                  _expenses[index] = {
-                    'amount': newExpenseAmount,
-                    'description': _descriptionController.text.isNotEmpty ? _descriptionController.text : expense['description'],
-                    'date': _selectedDate.toIso8601String(),
-                  };
+                // Adjust the total expenses for the old month
+                _currentTotalExpenses -= expense['amount'];
 
-                  // Update the remaining budget
-                  _currentRemainingBudget = _budget - _currentTotalExpenses;
+                // If the expense moves to a different month, update the old month metrics
+                if (oldMonthKey != newMonthKey) {
+                  _updateMonthMetrics(oldMonthKey);
+                }
 
-                  // Save updated data
-                  _saveBudgetData();
-                
+                // Update the expense details
+                _expenses[index] = {
+                  'amount': newExpenseAmount,
+                  'description': _descriptionController.text.isNotEmpty
+                      ? _descriptionController.text
+                      : expense['description'],
+                  'date': _selectedDate.toIso8601String(),
+                };
+
+                // Update the total expenses and remaining budget for the new month
+                _currentTotalExpenses += newExpenseAmount;
+                _currentRemainingBudget = _budget - _currentTotalExpenses;
+
+                // Update the metrics for the new month
+                _updateMonthMetrics(newMonthKey);
+
+                // Save the updated data
+                _saveBudgetData();
+
                 Navigator.of(context).pop(); // Close the dialog
               }),
               child: const Text("Save"),
@@ -368,6 +385,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       },
     );
   }
+
 
   void _refreshMonth() {
     setState(() {
