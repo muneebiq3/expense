@@ -502,9 +502,22 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
                         (expense) {
                           return Card(
                             child: ListTile(
-                              title: Text(
-                                '${expense['description']} - PKR ${expense['amount']}',
-                                style: const TextStyle(fontSize: 16),
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'PKR ${expense['amount']}', // Amount in bold
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${expense['description']}', // Description in normal font
+                                    style: const TextStyle(fontSize: 16),
+                                  )
+                                ]
                               ),
                               subtitle: Text(
                                 DateFormat.yMMMd().format(
