@@ -81,19 +81,31 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   }
 
   void _decreaseBudget() {
-    double decreaseAmount = double.tryParse(_decreaseBudgetController.text) ?? 0.0;
     setState(() {
+      double decreaseAmount = double.tryParse(_decreaseBudgetController.text) ?? 0.0;
       if (decreaseAmount > 0) {
+        // Decrease the current remaining budget and budget
         _currentRemainingBudget -= decreaseAmount;
         _budget -= decreaseAmount;
+
+        // Get the selected month key
         String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
+
+        // Update the budget in the _monthlyBudgets map
         _monthlyBudgets[selectedMonthKey] = _budget;
+
+        // Clear the input field
         _decreaseBudgetController.clear();
+
+        // Save the updated budget data
         _saveBudgetData();
+
+        // Recalculate the metrics for the selected month
         _updateMonthMetrics(selectedMonthKey);
       }
     });
   }
+
 
   void _loadBudgetData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -237,6 +249,9 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     // Store the updated savings for the specified month
     _monthlySavings[monthKey] = remainingBudgetForMonth;
 
+    // Update the metrics for the drawer or other UI sections if needed
+    
+
     // If the month being updated is the currently selected month, update the UI
     if (monthKey == DateFormat('MMMM yyyy').format(_selectedMonth)) {
       _currentTotalExpenses = totalExpensesForMonth;
@@ -264,10 +279,19 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   }
 
   void _deleteExpense(int index) {
+    String expenseMonthKey = DateFormat('MMMM yyyy').format(DateTime.parse(_expenses[index]['date']));
+
     setState(() {
-      _currentTotalExpenses -= _expenses[index]['amount'];
-      _currentRemainingBudget = _budget - _currentTotalExpenses;
+      // Update the budget for the month of the deleted expense, not just the selected month
+      _currentRemainingBudget += _expenses[index]['amount'];
+
+      // Remove the expense from the list
       _expenses.removeAt(index);
+
+      // Update the month metrics for the month from which the expense was deleted
+      _updateMonthMetrics(expenseMonthKey);
+
+      // Save the updated data
       _saveBudgetData();
     });
   }
