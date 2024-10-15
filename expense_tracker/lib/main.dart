@@ -389,11 +389,30 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
 
   void _refreshMonth() {
     setState(() {
+      // Get the selected month key
+      String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
+
+      // Remove all expenses for the selected month
+      _expenses.removeWhere((expense) =>
+        DateFormat('MMMM yyyy').format(DateTime.parse(expense['date'])) == selectedMonthKey);
+
+      // Reset budget, total expenses, remaining budget, and savings for the selected month
       _budget = 0.0;
-      _budgetController.clear();
       _currentTotalExpenses = 0.0;
       _currentRemainingBudget = 0.0;
+      _monthlyBudgets[selectedMonthKey] = _budget;
+      _monthlySavings[selectedMonthKey] = _currentRemainingBudget;
+
+      // Clear any input controllers related to the budget
+      _budgetController.clear();
+
+      // Save the updated data
       _saveBudgetData();
+
+      // Recalculate metrics for the selected month (which should now be 0)
+      _updateMonthMetrics(selectedMonthKey);
+
+      // Optionally disable the button if needed
       _enableButton();
     });
   }
