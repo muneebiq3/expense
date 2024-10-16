@@ -127,7 +127,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   }
 
   void _increaseBudgetWithDescription(String description, DateTime selectedDate) {
-    
+
     double increaseAmount = double.tryParse(_increaseBudgetController.text) ?? 0.0;
     String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
 
@@ -160,9 +160,20 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   }
 
   void _deleteBudgetIncrease(int index) {
+    // Get the month-year key for the budget increase
+    String increaseMonthKey = DateFormat('MMMM yyyy').format(DateTime.parse(_budgetIncreases[index]['date']));
+
     setState(() {
+      // Update the remaining budget by subtracting the budget increase amount
+      _currentRemainingBudget -= _budgetIncreases[index]['amount'];
+
+      // Remove the budget increase from the list
       _budgetIncreases.removeAt(index);
-      // Optionally update the remaining budget and metrics after deleting
+
+      // Update the metrics for the month from which the increase was deleted
+      _updateMonthMetrics(increaseMonthKey);
+
+      // Save the updated data
       _saveBudgetData();
     });
   }
@@ -193,8 +204,8 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     });
   }
 
-
   void _loadBudgetData() async {
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       // Load monthly budgets
@@ -219,9 +230,11 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       // Update the UI with the selected month's data
       _updateSelectedMonthData();
     });
+
   }
 
   void _saveBudgetData() async {
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     // Batch saving data to avoid multiple disk writes
@@ -229,6 +242,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     await prefs.setString('monthlySavings', json.encode(_monthlySavings));
     await prefs.setString('expenses', json.encode(_expenses));
     await prefs.setString('budgetIncreases', json.encode(_budgetIncreases)); // Save the increases
+
   }
 
   // Update budget and expenses for the selected month
@@ -257,6 +271,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
   }
 
   void _calculatePreviousMonthSavings() {
+
     String selectedMonthKey = DateFormat('MMMM yyyy').format(_selectedMonth);
 
     // Group expenses by month
@@ -474,7 +489,6 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     );
   }
 
-
   void _refreshMonth() {
     setState(() {
       // Get the selected month key
@@ -518,7 +532,9 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
       });
     }
   }
+
   Map<String, List<Map<String, dynamic>>> _groupExpensesByMonth() {
+
     Map<String, List<Map<String, dynamic>>> groupedItems = {};
 
     for (var expense in _expenses) {
@@ -556,6 +572,7 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
 
     return groupedItems;
   }
+
   Map<String, double> _monthlyBudgets = {};
   Map<String, double> _monthlySavings = {};  // Track savings for each month
   DateTime _selectedMonth = DateTime.now();
@@ -566,104 +583,108 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     });
   }
 
-Widget _buildExpensesWidget() {
-  return _expenses.isEmpty && _budgetIncreases.isEmpty
-      ? const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'No expenses or budget increases added yet.',
-            style: TextStyle(fontSize: 16),
-          ),
-        )
-      : FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
-          future: Future.value(_groupExpensesByMonth()), // Use the updated method
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text("Error: ${snapshot.error}"));
-            } else {
-              final groupedItems = snapshot.data!;
+  Widget _buildExpensesWidget() {
+    return _expenses.isEmpty && _budgetIncreases.isEmpty
+    ? const Padding(
+      padding: EdgeInsets.all(16.0),
+        child: Text(
+          'No expenses or budget increases added yet.',
+          style: TextStyle(fontSize: 16),
+        ),
+    )
+    : FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
+      future: Future.value(_groupExpensesByMonth()), // Use the new method
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } 
+        else if (snapshot.hasError) {
+          return Center(child: Text("Error: ${snapshot.error}"));
+        } 
+        else {
+          final groupedItems = snapshot.data!;
 
-              return Flexible(
-                child: ListView(
-                  children: groupedItems.entries.map(
-                    (entry) {
-                      String monthYear = entry.key;
-                      List<Map<String, dynamic>> items = entry.value;
+          return Flexible(
+            child: ListView(
+              children: groupedItems.entries.map(
+                (entry) {
+                  String monthYear = entry.key;
+                  List<Map<String, dynamic>> items = entry.value;
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            child: Text(
-                              monthYear,
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Text(
+                          monthYear,
+                          style: const TextStyle(
+                            fontSize: 18, 
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      ),
+                      ...items.asMap().entries.map(
+                        (entry) {
+                          int index = entry.key;
+                          Map<String, dynamic> item = entry.value;
+
+                          bool isExpense = item['type'] == 'expense';
+                          return Card(
+                            child: ListTile(
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isExpense
+                                      ? 'PKR ${item['amount']}' // For expenses: normal amount
+                                      : 'PKR +${item['amount']}', // For increases: add "+" before the amount
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${item['description']}', // Display description for both
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                              subtitle: Text(
+                                DateFormat.yMMMd().format(DateTime.parse(item['date'])),
+                                style: const TextStyle(fontSize: 15),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isExpense)
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => _editExpense(index), // Pass the correct expense index
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () => isExpense
+                                        ? _deleteExpense(index) // Pass the correct index for the expense
+                                        : _deleteBudgetIncrease(index), // Pass the correct index for the increase
+                                    ),
+                                ],
+                              ),
                             ),
-                          ),
-                          ...items.map(
-                            (item) {
-                              bool isExpense = item['type'] == 'expense';
-                              return Card(
-                                child: ListTile(
-                                  title: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        isExpense
-                                            ? 'PKR ${item['amount']}' // For expenses: normal amount
-                                            : 'PKR +${item['amount']}', // For increases: add "+" before the amount
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${item['description']}', // Display description for both
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                    ],
-                                  ),
-                                  subtitle: Text(
-                                    DateFormat.yMMMd().format(DateTime.parse(item['date'])),
-                                    style: const TextStyle(fontSize: 15),
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (isExpense)
-                                        IconButton(
-                                          icon: const Icon(Icons.edit),
-                                          onPressed: () =>
-                                              _editExpense(_expenses.indexOf(item)),
-                                        ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () => isExpense
-                                            ? _deleteExpense(_expenses.indexOf(item))
-                                            : _deleteBudgetIncrease(_budgetIncreases.indexOf(item)),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  ).toList(),
-                ),
-              );
-            }
-          },
-        );
-}
-
-
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ).toList(),
+            ),
+          );
+        }
+      },
+    );
+  }
 
   Widget _buildSavingsList() {
     // If there are no previous months' savings, show a message
