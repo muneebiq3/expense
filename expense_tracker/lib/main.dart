@@ -346,20 +346,21 @@ class _BudgetHomePageState extends State<BudgetHomePage> {
     // Calculate total expenses for the specified month
     double totalExpensesForMonth = monthExpenses.fold(0.0, (sum, expense) => sum + expense['amount']);
 
-    // Calculate the remaining budget (savings) for the specified month
-    double remainingBudgetForMonth = monthBudget - totalExpensesForMonth;
+    // Filter increases for the specified month
+    List<Map<String, dynamic>> monthIncreases = _budgetIncreases
+        .where((increase) => DateFormat('MMMM yyyy').format(DateTime.parse(increase['date'])) == monthKey)
+        .toList();
 
-    // Store the updated savings for the specified month
-    _monthlySavings[monthKey] = remainingBudgetForMonth;
+    // Calculate total budget increases for the specified month
+    double totalIncreasesForMonth = monthIncreases.fold(0.0, (sum, increase) => sum + increase['amount']);
 
-    // Update the metrics for the drawer or other UI sections if needed
-    
+    // Update the budget and remaining budget for the month
+    _currentRemainingBudget = monthBudget + totalIncreasesForMonth - totalExpensesForMonth;
 
     // If the month being updated is the currently selected month, update the UI
     if (monthKey == DateFormat('MMMM yyyy').format(_selectedMonth)) {
       _currentTotalExpenses = totalExpensesForMonth;
-      _currentRemainingBudget = remainingBudgetForMonth;
-      _budget = monthBudget;
+      _budget = monthBudget + totalIncreasesForMonth; // Reflect total budget after increase
     }
   }
 
